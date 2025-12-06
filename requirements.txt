@@ -2,5 +2,8 @@ flask==2.3.3
 flask-cors==3.0.10
 mysql-connector-python==8.1.0
 gunicorn==21.2.0
+werkzeug
 bcrypt
 requests
+torch
+transformers
