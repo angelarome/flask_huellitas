@@ -157,19 +157,18 @@ def registrar_usuario():
     valores_dueno = (id_usuario, cedula, nombre, apellido, telefono, correo, departamento, ciudad, direccion, contrasena_cifrada, imagen_base64)
     cursor.execute(sql_dueno, valores_dueno)
     db.commit()
-    
-    try:
-        enviar_correo_bienvenida(correo, nombre)
-    except Exception as e:
-        print("Error enviando correo:", e)
 
-    # 🔹 Recuperar los datos recién insertados
     cursor.execute("SELECT id_dueno, cedula, nombre, apellido, telefono, departamento, ciudad, direccion, foto_perfil FROM dueno_mascotas WHERE id_dueno = %s", 
                    (id_usuario,))
     usuario = cursor.fetchone()
     
     cursor.close()
     db.close()
+    
+    try:
+        enviar_correo_bienvenida(correo, nombre)
+    except:
+        pass
     
     return jsonify({
         "mensaje": "Usuario registrado correctamente",
