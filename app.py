@@ -24,11 +24,11 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 def get_connection():
     try:
         db = mysql.connector.connect(
-            host=os.environ.get("DB_HOST"),
-            port=int(os.environ.get("DB_PORT", 10512)),
-            user=os.environ.get("DB_USER"),
-            password=os.environ.get("DB_PASS"),
-            database=os.environ.get("DB_NAME")
+            host="interchange.proxy.rlwy.net",
+            port=10512,
+            user="root",
+            password="IzQhunshkUfLswbIqMSMIKDdsfpIjRlA",
+            database="railway"
         )
         return db
     except Error as e:
