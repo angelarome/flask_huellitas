@@ -36,7 +36,10 @@ def get_connection():
         return None
 
 
-# 🔥 Nuevo endpoint para Ollama
+@app.route("/")
+def home():
+    return "Hola, servidor Flask activo 🚀"
+
 @app.route("/chat", methods=["POST"])
 def chat_with_ollama():
     try:
