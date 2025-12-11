@@ -3857,6 +3857,10 @@ def aceptar_reserva():
 def obtenerAgenda_usuario():
     data = request.get_json()
     id_dueno = data.get("id_dueno")
+    try:
+        id_dueno = int(id_dueno)
+    except:
+        return jsonify({"error": "id_dueno inválido"}), 400
     if not id_dueno:
         return jsonify({"error": "Falta la cédula"}), 400
 
