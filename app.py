@@ -3915,19 +3915,30 @@ def obtenerAgenda_usuario():
 
     for r in resultados:
 
-        # 🔥 Limpiar NULL → "" en cada fila
+    # Limpiar NULL → ""
         for key, value in r.items():
             if value is None:
                 r[key] = ""
 
-        # 🔥 Convertir fechas a string si existen
-        if r['higiene_fecha']:
-            r['higiene_fecha'] = str(r['higiene_fecha'])
+            # Convertir fecha y hora, asegurando formato correcto
+            campos_fecha = ["higiene_fecha", "medicamento_fecha"]
+            campos_hora = ["higiene_hora", "medicamento_hora"]
 
-        if r['medicamento_fecha']:
-            r['medicamento_fecha'] = str(r['medicamento_fecha'])
+            for campo in campos_fecha:
+                valor = r.get(campo)
+                if isinstance(valor, (datetime.date, datetime.datetime)):
+                    r[campo] = valor.strftime("%Y-%m-%d")   # ← FORMATO BONITO
+                elif not valor:
+                    r[campo] = ""  # si venía null o vacío
 
-        resultados_serializables.append(r)
+            for campo in campos_hora:
+                valor = r.get(campo)
+                if isinstance(valor, datetime.time):
+                    r[campo] = valor.strftime("%H:%M:%S")
+                elif not valor:
+                    r[campo] = ""
+            
+            resultados_serializables.append(r)
 
     return jsonify({"agenda": resultados_serializables})
 
