@@ -3927,7 +3927,22 @@ def obtenerAgenda_usuario():
                 if value is None:
                     r[key] = ""
 
-            # 2) Formatear fechas
+            horas = ["higiene_hora", "medicamento_hora"]
+
+            for campo in horas:
+                valor = r.get(campo)
+                if isinstance(valor, datetime.timedelta):
+                    # convierte timedelta a HH:MM:SS
+                    total_segundos = int(valor.total_seconds())
+                    horas = total_segundos // 3600
+                    minutos = (total_segundos % 3600) // 60
+                    segundos = total_segundos % 60
+                    r[campo] = f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+                elif isinstance(valor, datetime.time):
+                    r[campo] = valor.strftime("%H:%M:%S")
+                elif not valor:
+                    r[campo] = ""
+                    
             campos_fecha = ["higiene_fecha", "medicamento_fecha"]
             for campo in campos_fecha:
                 valor = r.get(campo)
