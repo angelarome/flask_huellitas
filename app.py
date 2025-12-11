@@ -3857,7 +3857,6 @@ def aceptar_reserva():
 def obtenerAgenda_usuario():
     data = request.get_json()
     id_dueno = data.get("id_dueno")
-
     if not id_dueno:
         return jsonify({"error": "Falta la cédula"}), 400
 
@@ -3917,7 +3916,7 @@ def obtenerAgenda_usuario():
         r['medicamento_fecha'] = r['medicamento_fecha'].strftime("%Y-%m-%d") if isinstance(r['medicamento_fecha'], datetime) else str(r['medicamento_fecha'])
         resultados_serializables.append(r)
 
-    return jsonify({"pedido": resultados_serializables})
+    return jsonify({"agenda": resultados_serializables})
 
 
 if __name__ == "__main__":
