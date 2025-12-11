@@ -3898,13 +3898,13 @@ def obtenerAgenda_usuario():
     FROM duenosymascotas d
 
     JOIN mascotas m
-        ON d.id_mascota = m.id_mascota
+        ON d.id_mascota = m.id_mascotas
 
     LEFT JOIN higiene h
-        ON m.id_mascota = h.id_mascota
+        ON m.id_mascotas = h.id_mascota
 
     LEFT JOIN medicamento med
-        ON m.id_mascota = med.id_mascota
+        ON m.id_mascotas = med.id_mascota
 
     WHERE d.id_dueno = %s;
     """, (id_dueno,))
@@ -3919,9 +3919,6 @@ def obtenerAgenda_usuario():
 
         r['medicamento_fecha'] = r['medicamento_fecha'].strftime("%Y-%m-%d") if isinstance(r['medicamento_fecha'], datetime) else str(r['medicamento_fecha'])
         resultados_serializables.append(r)
-
-        if isinstance(r["imagen_perfil"], (bytes, bytearray)):
-            r["imagen_perfil"] = base64.b64encode(r["imagen_perfil"]).decode('utf-8')
         
     return jsonify({"agenda": resultados_serializables})
 
