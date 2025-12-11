@@ -3913,34 +3913,39 @@ def obtenerAgenda_usuario():
 
     resultados_serializables = []
 
+    # ------------------------------
+    # 🧼 LIMPIADOR UNIVERSAL (NO CAMBIA TU LÓGICA)
+    # ------------------------------
     for r in resultados:
 
-    # Limpiar NULL → ""
+        # 1) Convertir NULL → ""
         for key, value in r.items():
             if value is None:
                 r[key] = ""
 
-            # Convertir fecha y hora, asegurando formato correcto
-            campos_fecha = ["higiene_fecha", "medicamento_fecha"]
-            campos_hora = ["higiene_hora", "medicamento_hora"]
+        # 2) Formatear fechas
+        campos_fecha = ["higiene_fecha", "medicamento_fecha"]
+        for campo in campos_fecha:
+            valor = r.get(campo)
+            if isinstance(valor, (datetime.date, datetime.datetime)):
+                r[campo] = valor.strftime("%Y-%m-%d")
+            elif not valor:
+                r[campo] = ""
 
-            for campo in campos_fecha:
-                valor = r.get(campo)
-                if isinstance(valor, (datetime.date, datetime.datetime)):
-                    r[campo] = valor.strftime("%Y-%m-%d")   # ← FORMATO BONITO
-                elif not valor:
-                    r[campo] = ""  # si venía null o vacío
+        # 3) Formatear horas
+        campos_hora = ["higiene_hora", "medicamento_hora"]
+        for campo in campos_hora:
+            valor = r.get(campo)
+            if isinstance(valor, datetime.time):
+                r[campo] = valor.strftime("%H:%M:%S")
+            elif not valor:
+                r[campo] = ""
 
-            for campo in campos_hora:
-                valor = r.get(campo)
-                if isinstance(valor, datetime.time):
-                    r[campo] = valor.strftime("%H:%M:%S")
-                elif not valor:
-                    r[campo] = ""
-            
-            resultados_serializables.append(r)
+        # 👉 ESTE ES EL LUGAR CORRECTO PARA AGREGAR
+        resultados_serializables.append(r)
 
     return jsonify({"agenda": resultados_serializables})
+
 
 
 if __name__ == "__main__":
