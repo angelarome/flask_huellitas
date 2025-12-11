@@ -3858,6 +3858,8 @@ def obtenerAgenda_usuario():
     data = request.get_json()
     id_dueno = data.get("id_dueno")
 
+    print("🔥 ID RECIBIDO EN /miagenda:", id_dueno)
+    
     try:
         id_dueno = int(id_dueno)
     except:
