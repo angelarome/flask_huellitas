@@ -3873,7 +3873,7 @@ def obtenerAgenda_usuario():
     SELECT 
     d.id_dueno,
     
-    m.id_mascota,
+    m.id_mascotas,
     m.nombre AS nombre_mascota,
     m.imagen_perfil,
 
@@ -3909,15 +3909,20 @@ def obtenerAgenda_usuario():
     WHERE d.id_dueno = %s;
     """, (id_dueno,))
     resultados = cursor.fetchall()
+    
+    if r:
+        for key, value in r.items():
+            if value is None:
+                r[key] = ""
+                
     cursor.close()
     db.close()
 
     resultados_serializables = []
     for r in resultados:
-        # Convertir fecha y horas a string
-        r['higiene_fecha'] = r['higiene_fecha'].strftime("%Y-%m-%d") if isinstance(r['higiene_fecha'], datetime) else str(r['higiene_fecha'])
-
-        r['medicamento_fecha'] = r['medicamento_fecha'].strftime("%Y-%m-%d") if isinstance(r['medicamento_fecha'], datetime) else str(r['medicamento_fecha'])
+        r['higiene_fecha'] = str(r['higiene_fecha']) if r['higiene_fecha'] is not None else None
+        r['medicamento_fecha'] = str(r['medicamento_fecha']) if r['medicamento_fecha'] is not None else None
+        
         resultados_serializables.append(r)
         
     return jsonify({"agenda": resultados_serializables})
