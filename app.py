@@ -15,7 +15,7 @@ import requests
 from correorecuperacion import enviar_correo_recuperacion
 import random
 from decimal import Decimal
-
+import traceback
 app = Flask(__name__)
 CORS(app)
 
@@ -3855,102 +3855,107 @@ def aceptar_reserva():
 
 @app.route("/miagenda", methods=["POST"])
 def obtenerAgenda_usuario():
-    data = request.get_json()
-    id_dueno = data.get("id_dueno")
-
-    print("🔥 ID RECIBIDO EN /miagenda:", id_dueno)
-    
     try:
-        id_dueno = int(id_dueno)
-    except:
-        return jsonify({"error": "id_dueno inválido"}), 400
+        # TODO: todo tu código aquí
+    
+        data = request.get_json()
+        id_dueno = data.get("id_dueno")
 
-    if not id_dueno:
-        return jsonify({"error": "Falta la cédula"}), 400
+        print("🔥 ID RECIBIDO EN /miagenda:", id_dueno)
+        
+        try:
+            id_dueno = int(id_dueno)
+        except:
+            return jsonify({"error": "id_dueno inválido"}), 400
 
-    db = get_connection()
-    if db is None:
-        return jsonify({"error": "No hay conexión a la base de datos"}), 500
+        if not id_dueno:
+            return jsonify({"error": "Falta la cédula"}), 400
 
-    cursor = db.cursor(dictionary=True)
+        db = get_connection()
+        if db is None:
+            return jsonify({"error": "No hay conexión a la base de datos"}), 500
 
-    cursor.execute("""
-    SELECT 
-        d.id_dueno,
-        m.id_mascotas,
-        m.nombre AS nombre_mascota,
-        m.imagen_perfil,
+        cursor = db.cursor(dictionary=True)
 
-        h.id_higiene,
-        h.tipo AS higiene_tipo,
-        h.frecuencia AS higiene_frecuencia,
-        h.dias_personalizados AS higiene_dias_personalizados,
-        h.fecha AS higiene_fecha,
-        h.hora AS higiene_hora,
-        h.notas AS higiene_notas,
+        cursor.execute("""
+        SELECT 
+            d.id_dueno,
+            m.id_mascotas,
+            m.nombre AS nombre_mascota,
+            m.imagen_perfil,
 
-        med.id_medicamento,
-        med.tipo AS medicamento_tipo,
-        med.dosis,
-        med.unidad,
-        med.frecuencia AS medicamento_frecuencia,
-        med.dias_personalizados AS medicamento_dias_personalizados,
-        med.fecha AS medicamento_fecha,
-        med.hora AS medicamento_hora,
-        med.descripcion AS medicamento_descripcion
+            h.id_higiene,
+            h.tipo AS higiene_tipo,
+            h.frecuencia AS higiene_frecuencia,
+            h.dias_personalizados AS higiene_dias_personalizados,
+            h.fecha AS higiene_fecha,
+            h.hora AS higiene_hora,
+            h.notas AS higiene_notas,
 
-    FROM duenosymascotas d
-    JOIN mascotas m ON d.id_mascota = m.id_mascotas
-    LEFT JOIN higiene h ON m.id_mascotas = h.id_mascota
-    LEFT JOIN medicamento med ON m.id_mascotas = med.id_mascota
-    WHERE d.id_dueno = %s;
-    """, (id_dueno,))
+            med.id_medicamento,
+            med.tipo AS medicamento_tipo,
+            med.dosis,
+            med.unidad,
+            med.frecuencia AS medicamento_frecuencia,
+            med.dias_personalizados AS medicamento_dias_personalizados,
+            med.fecha AS medicamento_fecha,
+            med.hora AS medicamento_hora,
+            med.descripcion AS medicamento_descripcion
 
-    resultados = cursor.fetchall()
+        FROM duenosymascotas d
+        JOIN mascotas m ON d.id_mascota = m.id_mascotas
+        LEFT JOIN higiene h ON m.id_mascotas = h.id_mascota
+        LEFT JOIN medicamento med ON m.id_mascotas = med.id_mascota
+        WHERE d.id_dueno = %s;
+        """, (id_dueno,))
 
-    cursor.close()
-    db.close()
+        resultados = cursor.fetchall()
 
-    resultados_serializables = []
+        cursor.close()
+        db.close()
 
-    # ------------------------------
-    # 🧼 LIMPIADOR UNIVERSAL (NO CAMBIA TU LÓGICA)
-    # ------------------------------
-    for r in resultados:
+        resultados_serializables = []
 
-        # 1) Convertir NULL → ""
-        for key, value in r.items():
-            if value is None:
-                r[key] = ""
+        # ------------------------------
+        # 🧼 LIMPIADOR UNIVERSAL (NO CAMBIA TU LÓGICA)
+        # ------------------------------
+        for r in resultados:
 
-        # 2) Formatear fechas
-        campos_fecha = ["higiene_fecha", "medicamento_fecha"]
-        for campo in campos_fecha:
-            valor = r.get(campo)
-            if isinstance(valor, (datetime.date, datetime.datetime)):
-                r[campo] = valor.strftime("%Y-%m-%d")
-            elif not valor:
-                r[campo] = ""
+            # 1) Convertir NULL → ""
+            for key, value in r.items():
+                if value is None:
+                    r[key] = ""
 
-        # 3) Formatear horas
-        campos_hora = ["higiene_hora", "medicamento_hora"]
-        for campo in campos_hora:
-            valor = r.get(campo)
-            if isinstance(valor, datetime.time):
-                r[campo] = valor.strftime("%H:%M:%S")
-            elif not valor:
-                r[campo] = ""
+            # 2) Formatear fechas
+            campos_fecha = ["higiene_fecha", "medicamento_fecha"]
+            for campo in campos_fecha:
+                valor = r.get(campo)
+                if isinstance(valor, (datetime.date, datetime.datetime)):
+                    r[campo] = valor.strftime("%Y-%m-%d")
+                elif not valor:
+                    r[campo] = ""
 
-        # 👉 ESTE ES EL LUGAR CORRECTO PARA AGREGAR
-        resultados_serializables.append(r)
+            # 3) Formatear horas
+            campos_hora = ["higiene_hora", "medicamento_hora"]
+            for campo in campos_hora:
+                valor = r.get(campo)
+                if isinstance(valor, datetime.time):
+                    r[campo] = valor.strftime("%H:%M:%S")
+                elif not valor:
+                    r[campo] = ""
 
-    return jsonify({"agenda": resultados_serializables})
+            # 👉 ESTE ES EL LUGAR CORRECTO PARA AGREGAR
+            resultados_serializables.append(r)
 
+        return jsonify({"agenda": resultados_serializables})
+    except Exception as e:
+        print("🔥🔥 ERROR REAL DEL SERVIDOR:")
+        print(e)
+        traceback.print_exc()
+        return jsonify({"error": "Error interno", "detalle": str(e)}), 500
 
 
 if __name__ == "__main__":
-    print("Iniciando servidor Flask...")
-    # Opcional: probar la conexión antes de iniciar
     conn = get_connection()
     if conn:
         print("Conexión exitosa a MySQL")
