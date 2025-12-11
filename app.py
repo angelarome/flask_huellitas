@@ -3857,10 +3857,12 @@ def aceptar_reserva():
 def obtenerAgenda_usuario():
     data = request.get_json()
     id_dueno = data.get("id_dueno")
+
     try:
         id_dueno = int(id_dueno)
     except:
         return jsonify({"error": "id_dueno inválido"}), 400
+
     if not id_dueno:
         return jsonify({"error": "Falta la cédula"}), 400
 
@@ -3869,62 +3871,62 @@ def obtenerAgenda_usuario():
         return jsonify({"error": "No hay conexión a la base de datos"}), 500
 
     cursor = db.cursor(dictionary=True)
+
     cursor.execute("""
     SELECT 
-    d.id_dueno,
-    
-    m.id_mascotas,
-    m.nombre AS nombre_mascota,
-    m.imagen_perfil,
+        d.id_dueno,
+        m.id_mascotas,
+        m.nombre AS nombre_mascota,
+        m.imagen_perfil,
 
-    h.id_higiene,
-    h.tipo AS higiene_tipo,
-    h.frecuencia AS higiene_frecuencia,
-    h.dias_personalizados AS higiene_dias_personalizados,
-    h.fecha AS higiene_fecha,
-    h.hora AS higiene_hora,
-    h.notas AS higiene_notas,
+        h.id_higiene,
+        h.tipo AS higiene_tipo,
+        h.frecuencia AS higiene_frecuencia,
+        h.dias_personalizados AS higiene_dias_personalizados,
+        h.fecha AS higiene_fecha,
+        h.hora AS higiene_hora,
+        h.notas AS higiene_notas,
 
-    med.id_medicamento,
-    med.tipo AS medicamento_tipo,
-    med.dosis,
-    med.unidad,
-    med.frecuencia AS medicamento_frecuencia,
-    med.dias_personalizados AS medicamento_dias_personalizados,
-    med.fecha AS medicamento_fecha,
-    med.hora AS medicamento_hora,
-    med.descripcion AS medicamento_descripcion
+        med.id_medicamento,
+        med.tipo AS medicamento_tipo,
+        med.dosis,
+        med.unidad,
+        med.frecuencia AS medicamento_frecuencia,
+        med.dias_personalizados AS medicamento_dias_personalizados,
+        med.fecha AS medicamento_fecha,
+        med.hora AS medicamento_hora,
+        med.descripcion AS medicamento_descripcion
 
     FROM duenosymascotas d
-
-    JOIN mascotas m
-        ON d.id_mascota = m.id_mascotas
-
-    LEFT JOIN higiene h
-        ON m.id_mascotas = h.id_mascota
-
-    LEFT JOIN medicamento med
-        ON m.id_mascotas = med.id_mascota
-
+    JOIN mascotas m ON d.id_mascota = m.id_mascotas
+    LEFT JOIN higiene h ON m.id_mascotas = h.id_mascota
+    LEFT JOIN medicamento med ON m.id_mascotas = med.id_mascota
     WHERE d.id_dueno = %s;
     """, (id_dueno,))
+
     resultados = cursor.fetchall()
-    
-    if r:
-        for key, value in r.items():
-            if value is None:
-                r[key] = ""
-                
+
     cursor.close()
     db.close()
 
     resultados_serializables = []
+
     for r in resultados:
-        r['higiene_fecha'] = str(r['higiene_fecha']) if r['higiene_fecha'] is not None else None
-        r['medicamento_fecha'] = str(r['medicamento_fecha']) if r['medicamento_fecha'] is not None else None
-        
+
+        # 🔥 Limpiar NULL → "" en cada fila
+        for key, value in r.items():
+            if value is None:
+                r[key] = ""
+
+        # 🔥 Convertir fechas a string si existen
+        if r['higiene_fecha']:
+            r['higiene_fecha'] = str(r['higiene_fecha'])
+
+        if r['medicamento_fecha']:
+            r['medicamento_fecha'] = str(r['medicamento_fecha'])
+
         resultados_serializables.append(r)
-        
+
     return jsonify({"agenda": resultados_serializables})
 
 
