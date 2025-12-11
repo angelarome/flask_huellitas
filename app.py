@@ -970,6 +970,12 @@ def registrarTienda():
     
     cursor.close()
     db.close()
+    
+    try:
+        enviar_correo_bienvenida(correo, nombre_negocio)
+    except:
+        pass
+    
     return jsonify({
         "mensaje": "Tienda registrada correctamente",
         "mitienda": {
@@ -1402,7 +1408,12 @@ def registrarVeterinaria():
 
         cursor.close()
         db.close()
-
+        
+        try:
+            enviar_correo_bienvenida(correo, nombre_veterinaria)
+        except:
+            pass
+    
         return jsonify({
             "mensaje": "✅ Veterinaria registrada correctamente",
             "miveterinaria": {
@@ -1996,9 +2007,14 @@ def registrarPaseador():
         db.commit()
 
         id = cursor.lastrowid
-        
+
         cursor.close()
         db.close()
+        try:
+            enviar_correo_bienvenida(correo, nombre)
+        except:
+            pass
+        
         return jsonify({
             "mensaje": "Paseador registrada correctamente",
             "mipaseador": {
@@ -3836,6 +3852,73 @@ def aceptar_reserva():
     db.close()
 
     return jsonify({"mensaje": "Reserva aceptada correctamente"}), 200
+
+@app.route("/miagenda", methods=["POST"])
+def obtenerAgenda_usuario():
+    data = request.get_json()
+    id_dueno = data.get("id_dueno")
+
+    if not id_dueno:
+        return jsonify({"error": "Falta la cédula"}), 400
+
+    db = get_connection()
+    if db is None:
+        return jsonify({"error": "No hay conexión a la base de datos"}), 500
+
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("""
+    SELECT 
+    d.id_dueno,
+    
+    m.id_mascota,
+    m.nombre AS nombre_mascota,
+    m.imagen_perfil,
+
+    h.id_higiene,
+    h.tipo AS higiene_tipo,
+    h.frecuencia AS higiene_frecuencia,
+    h.dias_personalizados AS higiene_dias_personalizados,
+    h.fecha AS higiene_fecha,
+    h.hora AS higiene_hora,
+    h.notas AS higiene_notas,
+
+    med.id_medicamento,
+    med.tipo AS medicamento_tipo,
+    med.dosis,
+    med.unidad,
+    med.frecuencia AS medicamento_frecuencia,
+    med.dias_personalizados AS medicamento_dias_personalizados,
+    med.fecha AS medicamento_fecha,
+    med.hora AS medicamento_hora,
+    med.descripcion AS medicamento_descripcion
+
+    FROM duenosymascotas d
+
+    JOIN mascotas m
+        ON d.id_mascota = m.id_mascota
+
+    LEFT JOIN higiene h
+        ON m.id_mascota = h.id_mascota
+
+    LEFT JOIN medicamento med
+        ON m.id_mascota = med.id_mascota
+
+    WHERE d.id_dueno = %s;
+    """, (id_dueno,))
+    resultados = cursor.fetchall()
+    cursor.close()
+    db.close()
+
+    resultados_serializables = []
+    for r in resultados:
+        # Convertir fecha y horas a string
+        r['higiene_fecha'] = r['higiene_fecha'].strftime("%Y-%m-%d") if isinstance(r['higiene_fecha'], datetime) else str(r['higiene_fecha'])
+
+        r['medicamento_fecha'] = r['medicamento_fecha'].strftime("%Y-%m-%d") if isinstance(r['medicamento_fecha'], datetime) else str(r['medicamento_fecha'])
+        resultados_serializables.append(r)
+
+    return jsonify({"pedido": resultados_serializables})
+
 
 if __name__ == "__main__":
     print("Iniciando servidor Flask...")
