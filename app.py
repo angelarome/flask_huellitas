@@ -8,7 +8,8 @@ import os
 from werkzeug.utils import secure_filename
 from datetime import timedelta, time, date
 from correo import enviar_correo_bienvenida
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, time
+import datetime
 from flask import request, jsonify
 import bcrypt
 import requests
