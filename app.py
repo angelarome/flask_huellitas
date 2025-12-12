@@ -4010,11 +4010,11 @@ def registrar_collar_con_ubicacion():
         fecha_actual = datetime.now()
 
         sql_ubicacion = """
-            INSERT INTO ubicacion (id_mascota, id_collar, latitud, longitud, fecha)
+            INSERT INTO ubicacion (id_mascota, latitud, longitud, fecha, id_collar)
             VALUES (%s, %s, %s, %s, %s)
         """
         cursor.execute(sql_ubicacion, (
-            id_mascota, id_collar, latitud, longitud, fecha_actual
+            id_mascota, latitud, longitud, fecha_actual, id_collar
         ))
 
         db.commit()
