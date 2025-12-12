@@ -3989,11 +3989,18 @@ def registrar_collar_con_ubicacion():
     try:
         id_mascota = data.get("id_mascota")
         codigo_unico = data.get("codigo_unico")
-        latitud = float(data.get("latitud"))
-        longitud = float(data.get("longitud"))
+        latitud_str = data.get("latitud")
+        longitud_str = data.get("longitud")
 
-        if not id_mascota or not codigo_unico:
+        # Validaciones
+        if not id_mascota or not codigo_unico or not latitud_str or not longitud_str:
             return jsonify({"error": "Faltan datos requeridos"}), 400
+
+        try:
+            latitud = float(latitud_str)
+            longitud = float(longitud_str)
+        except ValueError:
+            return jsonify({"error": "Latitud o longitud inválidas"}), 400
 
         db = get_connection()
         cursor = db.cursor()
