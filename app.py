@@ -42,47 +42,39 @@ def home():
     return "Hola, servidor Flask activo 🚀"
 
 @app.route("/chat", methods=["POST"])
-def chat_with_ollama():
+def chat_with_groq():
     try:
         data = request.get_json()
         mensaje = data.get("mensaje", "")
-        
+
         if not mensaje:
             return jsonify({"error": "No se proporcionó mensaje"}), 400
 
-        # Configuración para Ollama local
-        ollama_url = "http://localhost:11434/api/generate"
-        payload = {
-            "model": "phi3:mini",
-            "prompt": f"""
-            Eres FirulAI, un asistente especializado en mascotas. 
-            Responde de manera CONCISA y directa (máximo 100 palabras).
-            Sé amable pero ve al grano.
-            
-            Pregunta: {mensaje}
-            
-            Respuesta concisa:
-            """,
-            "stream": False,
-            "options": {
-                "temperature": 0.7,
-                "top_p": 0.9,
-                "num_predict": 150  # Limita la longitud de respuesta
-            }
+        url = "https://api.groq.com/openai/v1/chat/completions"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer TU_API_KEY_GROQ"
         }
 
-        response = requests.post(ollama_url, json=payload, timeout=45) # segundos
-        
+        payload = {
+            "model": "llama3-70b-8192",
+            "messages": [
+                {"role": "user", "content": mensaje}
+            ]
+        }
+
+        response = requests.post(url, json=payload, headers=headers)
+
         if response.status_code == 200:
-            result = response.json()
-            respuesta = result.get("response", "Lo siento, no pude generar una respuesta.")
+            data = response.json()
+            respuesta = data["choices"][0]["message"]["content"]
             return jsonify({"respuesta": respuesta})
         else:
-            return jsonify({"error": "Error al conectar con Ollama"}), 500
+            return jsonify({"error": "Groq devolvió un error"}), 500
 
     except Exception as e:
-        print(f"Error en chat: {e}")
         return jsonify({"error": str(e)}), 500
+
     
     
 # ✅ Obtener lista de usuarios
@@ -3857,12 +3849,8 @@ def aceptar_reserva():
 @app.route("/miagenda", methods=["POST"])
 def obtenerAgenda_usuario():
     try:
-        # TODO: todo tu código aquí
-    
         data = request.get_json()
         id_dueno = data.get("id_dueno")
-
-        print("🔥 ID RECIBIDO EN /miagenda:", id_dueno)
         
         try:
             id_dueno = int(id_dueno)
