@@ -3985,6 +3985,8 @@ def collar():
 @app.route("/registrar_collar", methods=["POST"])
 def registrar_collar_con_ubicacion():
     data = request.get_json()
+    print("🔹 Datos recibidos:", data)
+    
 
     try:
         id_mascota = data.get("id_mascota")
@@ -4005,10 +4007,6 @@ def registrar_collar_con_ubicacion():
         db = get_connection()
         cursor = db.cursor()
 
-        print("id_mascota:", id_mascota)
-        print("codigo_unico:", codigo_unico)
-        print("latitud:", latitud)
-        print("longitud:", longitud)
         sql_collar = "INSERT INTO collares (id_mascota, codigo_unico, estado) VALUES (%s, %s, %s)"
         cursor.execute(sql_collar, (id_mascota, codigo_unico, "prendido"))
         id_collar = cursor.lastrowid
