@@ -3958,6 +3958,81 @@ def obtenerAgenda_usuario():
         traceback.print_exc()
         return jsonify({"error": "Error interno", "detalle": str(e)}), 500
 
+@app.route("/collar", methods=["POST"])
+def collar():
+    data = request.get_json()
+    id_mascota = data.get("id_mascota")
+
+    if not id_mascota:
+        return jsonify({"error": "Falta el ID de la mascota"}), 400
+
+    db = get_connection()
+    if db is None:
+        return jsonify({"error": "No hay conexión a la base de datos"}), 500
+
+    cursor = db.cursor(dictionary=True)
+    sql = """
+        SELECT id_collar, codigo_unico, estado
+        FROM collares
+        WHERE id_mascota = %s
+    """
+    cursor.execute(sql, (id_mascota,))
+    collar = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return jsonify({"collar": collar}), 200
+
+@app.route("/registrar_collar", methods=["POST"])
+def registrar_collar_con_ubicacion():
+    data = request.get_json()
+
+    id_mascota = data.get("id_mascota")
+    codigo_unico = data.get("codigo_unico")
+    latitud = float(data.get("latitud"))
+    longitud = float(data.get("longitud"))
+
+    if not id_mascota or not codigo_unico:
+        return jsonify({"error": "Faltan datos requeridos"}), 400
+
+    db = get_connection()
+    cursor = db.cursor()
+
+    try:
+        # 1. Insertar collar
+        sql_collar = """
+            INSERT INTO collares (id_mascota, codigo_unico, estado)
+            VALUES (%s, %s, %s)
+        """
+        cursor.execute(sql_collar, (id_mascota, codigo_unico, "prendido"))
+        id_collar = cursor.lastrowid 
+
+        # 2. Insertar ubicación
+        fecha_actual = datetime.now()
+
+        sql_ubicacion = """
+            INSERT INTO ubicacion (id_mascota, id_collar, latitud, longitud, fecha)
+            VALUES (%s, %s, %s, %s, %s)
+        """
+        cursor.execute(sql_ubicacion, (
+            id_mascota, id_collar, latitud, longitud, fecha_actual
+        ))
+
+        db.commit()
+
+        return jsonify({
+            "ok": True,
+            "mensaje": "Collar y ubicación registrados",
+            "id_collar": id_collar
+        }), 200
+
+    except Exception as e:
+        db.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        db.close()
+
 
 if __name__ == "__main__":
     conn = get_connection()
