@@ -3985,9 +3985,7 @@ def collar():
 @app.route("/registrar_collar", methods=["POST"])
 def registrar_collar_con_ubicacion():
     data = request.get_json()
-    print("🔹 Datos recibidos:", data)
     
-
     try:
         id_mascota = data.get("id_mascota")
         codigo_unico = data.get("codigo_unico")
@@ -4035,6 +4033,29 @@ def registrar_collar_con_ubicacion():
             db.close()
         return jsonify({"error": str(e)}), 500
 
+@app.route("/ubicacion", methods=["POST"])
+def ubicacion():
+    data = request.get_json()
+    id_mascota = data.get("id_mascota")
+
+    if not id_mascota:
+        return jsonify({"error": "Falta el ID de la mascota"}), 400
+
+    db = get_connection()
+    if db is None:
+        return jsonify({"error": "No hay conexión a la base de datos"}), 500
+
+    cursor = db.cursor(dictionary=True)
+    sql = """
+        SELECT latitud, longitud, fecha
+        FROM ubicacion
+        WHERE id_mascota = %s
+    """
+    cursor.execute(sql, (id_mascota,))
+    ubicacion = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return jsonify({"ubicacion": ubicacion}), 200
 
 if __name__ == "__main__":
     conn = get_connection()
