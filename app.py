@@ -4027,6 +4027,7 @@ def registrar_collar_con_ubicacion():
 
     except Exception as e:
         db.rollback()
+        print(traceback.format_exc())
         return jsonify({"error": str(e)}), 500
 
     finally:
