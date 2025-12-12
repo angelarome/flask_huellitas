@@ -4005,13 +4005,17 @@ def registrar_collar_con_ubicacion():
         db = get_connection()
         cursor = db.cursor()
 
-        # Insertar collar
+        print("id_mascota:", id_mascota)
+        print("codigo_unico:", codigo_unico)
+        print("latitud:", latitud)
+        print("longitud:", longitud)
         sql_collar = "INSERT INTO collares (id_mascota, codigo_unico, estado) VALUES (%s, %s, %s)"
         cursor.execute(sql_collar, (id_mascota, codigo_unico, "prendido"))
         id_collar = cursor.lastrowid
 
         # Insertar ubicación
         fecha_actual = datetime.now()
+        print("fecha:", fecha_actual)
         sql_ubicacion = """
             INSERT INTO ubicacion (id_mascota, latitud, longitud, fecha, id_collar)
             VALUES (%s, %s, %s, %s, %s)
