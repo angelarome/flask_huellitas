@@ -4057,6 +4057,43 @@ def ubicacion():
     db.close()
     return jsonify({"ubicacion": ubicacion}), 200
 
+
+@app.route("/higienes-para-notificar", methods=["GET"])
+def higienes_para_notificar():
+    try:
+        fecha = request.args.get("fecha")
+        hora = request.args.get("hora")
+
+        if not fecha or not hora:
+            return jsonify({"error": "Fecha y hora requeridas"}), 400
+
+        db = get_connection()
+        cursor = db.cursor(dictionary=True)
+
+        sql = """
+            SELECT 
+                h.id_dueno,
+                h.tipo,
+                m.nombre AS nombre_mascota
+            FROM higiene h
+            JOIN mascotas m ON m.id = h.id_mascota
+            WHERE h.fecha = %s
+              AND DATE_FORMAT(h.hora, '%%H:%%i') = %s
+        """
+
+        cursor.execute(sql, (fecha, hora))
+        rows = cursor.fetchall()
+
+        cursor.close()
+        db.close()
+
+        return jsonify(rows), 200
+
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Error interno"}), 500
+    
+    
 if __name__ == "__main__":
     conn = get_connection()
     if conn:
