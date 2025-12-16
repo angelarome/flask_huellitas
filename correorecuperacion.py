@@ -4,7 +4,7 @@ from email.mime.multipart import MIMEMultipart
 
 def enviar_correo_recuperacion(destinatario, codigo):
     remitente = "huellitas.amor.por.los.animales@gmail.com"
-    contraseña = "twhccevzubbcplyp"  # Contraseña de aplicación
+    contraseña = "twhccevzubbcplyp"  # app password
 
     mensaje = MIMEMultipart("alternative")
     mensaje["Subject"] = "Recuperación de contraseña - Huellitas 🐾"
@@ -32,10 +32,14 @@ def enviar_correo_recuperacion(destinatario, codigo):
     mensaje.attach(MIMEText(html, "html"))
 
     try:
-        with smtplib.SMTP("smtp.gmail.com", 587) as server:
+        # ⏱️ timeout evita que Railway mate el worker
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
             server.starttls()
             server.login(remitente, contraseña)
             server.sendmail(remitente, destinatario, mensaje.as_string())
+
         print("Correo enviado correctamente")
+
     except Exception as e:
-        print("Error al enviar el correo:", e)
+        # IMPORTANTE: nunca dejar que explote
+        print("Error enviando correo:", e)
