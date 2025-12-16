@@ -252,9 +252,9 @@ def recuperarContrasena():
 
     cursor = db.cursor(dictionary=True)
 
-    # 1️⃣ Verificar correo (solo lo necesario)
+    # 1️⃣ Verificar correo
     cursor.execute(
-        "SELECT id_usuario FROM usuarios WHERE correo = %s",
+        "SELECT id_usuario, correo FROM usuarios WHERE correo = %s",
         (correo,)
     )
     usuario = cursor.fetchone()
@@ -284,7 +284,7 @@ def recuperarContrasena():
     )
     db.commit()
 
-    # 5️⃣ Enviar correo SIN bloquear el endpoint
+    # 5️⃣ Enviar correo (NO bloquear)
     try:
         enviar_correo_recuperacion(correo, codigo)
     except Exception as e:
@@ -293,9 +293,13 @@ def recuperarContrasena():
     cursor.close()
     db.close()
 
-    # 6️⃣ Respuesta limpia para Flutter
+    # 6️⃣ RESPUESTA compatible con Flutter
     return jsonify({
-        "mensaje": "Código de recuperación enviado"
+        "mensaje": "Código de recuperación enviado",
+        "usuario": {
+            "id_usuario": usuario["id_usuario"],
+            "correo": usuario["correo"]
+        }
     }), 200
     
 @app.route("/codigo", methods=["POST"])
