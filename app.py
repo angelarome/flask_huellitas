@@ -252,9 +252,8 @@ def recuperarContrasena():
 
     cursor = db.cursor(dictionary=True)
 
-    # 1️⃣ Verificar correo
     cursor.execute(
-        "SELECT id_usuario, correo FROM usuarios WHERE correo = %s",
+        "SELECT id_usuario FROM usuarios WHERE correo = %s",
         (correo,)
     )
     usuario = cursor.fetchone()
@@ -264,17 +263,14 @@ def recuperarContrasena():
         db.close()
         return jsonify({"error": "Correo no encontrado"}), 404
 
-    # 2️⃣ Generar código
     codigo = str(random.randint(100000, 999999))
     expira = datetime.now() + timedelta(minutes=5)
 
-    # 3️⃣ Limpiar códigos anteriores
     cursor.execute(
         "DELETE FROM codigos_recuperacion WHERE correo = %s",
         (correo,)
     )
 
-    # 4️⃣ Guardar código
     cursor.execute(
         """
         INSERT INTO codigos_recuperacion (correo, codigo, expiracion)
@@ -284,22 +280,20 @@ def recuperarContrasena():
     )
     db.commit()
 
-    # 5️⃣ Enviar correo (NO bloquear)
-    try:
-        enviar_correo_recuperacion(correo, codigo)
-    except Exception as e:
-        print("Error enviando correo:", e)
-
     cursor.close()
     db.close()
 
-    # 6️⃣ RESPUESTA compatible con Flutter
+    # 🔥 ENVÍO ASÍNCRONO (ESTO EVITA EL TIMEOUT)
+    threading.Thread(
+        target=enviar_correo_async,
+        args=(correo, codigo),
+        daemon=True
+    ).start()
+
+    # RESPUESTA RÁPIDA
     return jsonify({
-        "mensaje": "Código de recuperación enviado",
-        "usuario": {
-            "id_usuario": usuario["id_usuario"],
-            "correo": usuario["correo"]
-        }
+        "usuario": usuario["id_usuario"],
+        "mensaje": "Código enviado"
     }), 200
     
 @app.route("/codigo", methods=["POST"])
