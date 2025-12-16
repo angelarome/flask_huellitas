@@ -266,8 +266,8 @@ def recuperarContrasena():
 
     # 2️⃣ Generar código y expiración
     codigo = str(random.randint(100000, 999999))
-    expira = datetime.now() + timedelta(minutes=5)
-
+    expira = datetime.datetime.now() + timedelta(minutes=5)
+ 
     # 3️⃣ Borrar códigos anteriores del mismo correo
     cursor.execute("DELETE FROM codigos_recuperacion WHERE correo = %s", (correo,))
 
@@ -1671,8 +1671,8 @@ def obtenerCitas_veterinaria():
     resultados_serializables = []
     for r in resultados:
         # Convertir fecha y horas a string
-        r['fecha'] = r['fecha'].isoformat() if isinstance(r['fecha'], datetime) else str(r['fecha'])
-        r['hora'] = r['hora'].strftime('%H:%M:%S') if isinstance(r['hora'], datetime) else str(r['hora'])
+        r['fecha'] = r['fecha'].isoformat() if isinstance(r['fecha'], datetime.datetime) else str(r['fecha'])
+        r['hora'] = r['hora'].strftime('%H:%M:%S') if isinstance(r['hora'], datetime.datetime) else str(r['hora'])
 
 
         resultados_serializables.append(r)
@@ -2128,14 +2128,14 @@ def obtenerCitas_Paseador():
     resultados_serializables = []
     for r in resultados:
         # Convertir fecha y horas a string
-        r['fecha'] = r['fecha'].isoformat() if isinstance(r['fecha'], datetime) else str(r['fecha'])
-        r['hora_inicio'] = r['hora_inicio'].strftime('%H:%M:%S') if isinstance(r['hora_inicio'], datetime) else str(r['hora_inicio'])
-        r['hora_fin'] = r['hora_fin'].strftime('%H:%M:%S') if isinstance(r['hora_fin'], datetime) else (str(r['hora_fin']) if r['hora_fin'] else "N/A")
+        r['fecha'] = r['fecha'].isoformat() if isinstance(r['fecha'], datetime.datetime) else str(r['fecha'])
+        r['hora_inicio'] = r['hora_inicio'].strftime('%H:%M:%S') if isinstance(r['hora_inicio'], datetime.datetime) else str(r['hora_inicio'])
+        r['hora_fin'] = r['hora_fin'].strftime('%H:%M:%S') if isinstance(r['hora_fin'], datetime.datetime) else (str(r['hora_fin']) if r['hora_fin'] else "N/A")
 
         # Convertir timedelta a int (minutos)
         if r['hora_fin'] != "N/A":
-            hi = datetime.strptime(r['hora_inicio'], "%H:%M:%S")
-            hf = datetime.strptime(r['hora_fin'], "%H:%M:%S")
+            hi = datetime.datetime.strptime(r['hora_inicio'], "%H:%M:%S")
+            hf = datetime.datetime.strptime(r['hora_fin'], "%H:%M:%S")
             duracion = hf - hi
             r['duracion_minutos'] = int(duracion.total_seconds() // 60)  # <-- ya no es timedelta
         else:
@@ -3353,8 +3353,8 @@ def obtenerCitas_usuario():
     resultados_serializables = []
     for r in resultados:
         # Convertir fecha y horas a string
-        r['fecha'] = r['fecha'].isoformat() if isinstance(r['fecha'], datetime) else str(r['fecha'])
-        r['hora'] = r['hora'].strftime('%H:%M:%S') if isinstance(r['hora'], datetime) else str(r['hora'])
+        r['fecha'] = r['fecha'].isoformat() if isinstance(r['fecha'], datetime.datetime) else str(r['fecha'])
+        r['hora'] = r['hora'].strftime('%H:%M:%S') if isinstance(r['hora'], datetime.datetime) else str(r['hora'])
 
         resultados_serializables.append(r)
 
@@ -3371,8 +3371,8 @@ def registrar_reserva():
 
     # Parsear fechas y convertir a string
     try:
-        fecha_reserva_str = datetime.strptime(data["fecha_reserva"], "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d %H:%M:%S")
-        fecha_finalizado_str = datetime.strptime(data["fecha_finalizado"], "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d %H:%M:%S")
+        fecha_reserva_str = datetime.datetime.strptime(data["fecha_reserva"], "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d %H:%M:%S")
+        fecha_finalizado_str = datetime.datetime.strptime(data["fecha_finalizado"], "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d %H:%M:%S")
     except ValueError:
         return jsonify({"error": "Formato de fecha inválido. Use yyyy-MM-dd HH:mm:ss"}), 400
 
@@ -3427,7 +3427,7 @@ def registrar_pedido():
 
     # Parsear fechas y convertir a string
     try:
-        fecha_reserva = datetime.strptime(data["fecha"], "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d %H:%M:%S")
+        fecha_reserva = datetime.datetime.strptime(data["fecha"], "%Y-%m-%d %H:%M:%S").strftime("%Y-%m-%d %H:%M:%S")
     except ValueError:
         return jsonify({"error": "Formato de fecha inválido. Use yyyy-MM-dd HH:mm:ss"}), 400
 
@@ -3524,7 +3524,7 @@ def obtenerPedidos_usuario():
     resultados_serializables = []
     for r in resultados:
         # Convertir fecha y horas a string
-        r['fecha'] = r['fecha'].strftime("%Y-%m-%d") if isinstance(r['fecha'], datetime) else str(r['fecha'])
+        r['fecha'] = r['fecha'].strftime("%Y-%m-%d") if isinstance(r['fecha'], datetime.datetime) else str(r['fecha'])
 
         resultados_serializables.append(r)
 
@@ -3633,8 +3633,8 @@ def obtenerReservas_usuario():
     resultados_serializables = []
     for r in resultados:
         # Convertir fecha y horas a string
-        r['fecha_reserva'] = r['fecha_reserva'].strftime("%Y-%m-%d") if isinstance(r['fecha_reserva'], datetime) else str(r['fecha_reserva'])
-        r['fecha_vencimiento'] = r['fecha_vencimiento'].strftime("%Y-%m-%d %H:%M:%S") if isinstance(r['fecha_vencimiento'], datetime) else str(r['fecha_vencimiento'])
+        r['fecha_reserva'] = r['fecha_reserva'].strftime("%Y-%m-%d") if isinstance(r['fecha_reserva'], datetime.datetime) else str(r['fecha_reserva'])
+        r['fecha_vencimiento'] = r['fecha_vencimiento'].strftime("%Y-%m-%d %H:%M:%S") if isinstance(r['fecha_vencimiento'], datetime.datetime) else str(r['fecha_vencimiento'])
         resultados_serializables.append(r)
 
     return jsonify({"reserva": resultados_serializables})
@@ -3720,7 +3720,7 @@ def obtenerPedido():
     resultados_serializables = []
     for r in resultados:
         # Convertir fecha y horas a string
-        r['fecha'] = r['fecha'].strftime("%Y-%m-%d") if isinstance(r['fecha'], datetime) else str(r['fecha'])
+        r['fecha'] = r['fecha'].strftime("%Y-%m-%d") if isinstance(r['fecha'], datetime.datetime) else str(r['fecha'])
 
         resultados_serializables.append(r)
 
@@ -3822,8 +3822,8 @@ def obtenerReservas():
     resultados_serializables = []
     for r in resultados:
         # Convertir fecha y horas a string
-        r['fecha_reserva'] = r['fecha_reserva'].strftime("%Y-%m-%d") if isinstance(r['fecha_reserva'], datetime) else str(r['fecha_reserva'])
-        r['fecha_vencimiento'] = r['fecha_vencimiento'].strftime("%Y-%m-%d %H:%M:%S") if isinstance(r['fecha_vencimiento'], datetime) else str(r['fecha_vencimiento'])
+        r['fecha_reserva'] = r['fecha_reserva'].strftime("%Y-%m-%d") if isinstance(r['fecha_reserva'], datetime.datetime) else str(r['fecha_reserva'])
+        r['fecha_vencimiento'] = r['fecha_vencimiento'].strftime("%Y-%m-%d %H:%M:%S") if isinstance(r['fecha_vencimiento'], datetime.datetime) else str(r['fecha_vencimiento'])
         resultados_serializables.append(r)
 
     return jsonify({"reserva": resultados_serializables})
