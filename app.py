@@ -279,8 +279,10 @@ def recuperarContrasena():
     cursor.execute(sql, (correo, codigo, expira))
     db.commit()
 
-    # 5️⃣ Enviar correo con el código
-    enviar_correo_recuperacion(correo, codigo)
+    try:
+        enviar_correo_recuperacion(correo, codigo)
+    except Exception as e:
+        print("Error enviando correo:", e)
 
     cursor.close()
     db.close()
