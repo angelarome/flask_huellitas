@@ -3291,14 +3291,14 @@ def obtenerPaseos_usuario():
     resultados_serializables = []
     for r in resultados:
         # Convertir fecha y horas a string
-        r['fecha'] = r['fecha'].isoformat() if isinstance(r['fecha'], datetime) else str(r['fecha'])
-        r['hora_inicio'] = r['hora_inicio'].strftime('%H:%M:%S') if isinstance(r['hora_inicio'], datetime) else str(r['hora_inicio'])
-        r['hora_fin'] = r['hora_fin'].strftime('%H:%M:%S') if isinstance(r['hora_fin'], datetime) else (str(r['hora_fin']) if r['hora_fin'] else "N/A")
+        r['fecha'] = r['fecha'].isoformat() if isinstance(r['fecha'], datetime.datetime) else str(r['fecha'])
+        r['hora_inicio'] = r['hora_inicio'].strftime('%H:%M:%S') if isinstance(r['hora_inicio'], datetime.datetime) else str(r['hora_inicio'])
+        r['hora_fin'] = r['hora_fin'].strftime('%H:%M:%S') if isinstance(r['hora_fin'], datetime.datetime) else (str(r['hora_fin']) if r['hora_fin'] else "N/A")
 
         # Convertir timedelta a int (minutos)
         if r['hora_fin'] != "N/A":
-            hi = datetime.strptime(r['hora_inicio'], "%H:%M:%S")
-            hf = datetime.strptime(r['hora_fin'], "%H:%M:%S")
+            hi = datetime.datetime.strptime(r['hora_inicio'], "%H:%M:%S")
+            hf = datetime.datetime.strptime(r['hora_fin'], "%H:%M:%S")
             duracion = hf - hi
             r['duracion_minutos'] = int(duracion.total_seconds() // 60)  # <-- ya no es timedelta
         else:
