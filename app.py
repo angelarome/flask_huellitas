@@ -254,9 +254,11 @@ def recuperarContrasena():
 
     cursor = db.cursor(dictionary=True)
 
-    # 1️⃣ Verificar que el correo exista
-    sql = "SELECT * FROM usuarios WHERE correo = %s"
-    cursor.execute(sql, (correo,))
+    # 1️⃣ Verificar correo (solo lo necesario)
+    cursor.execute(
+        "SELECT id_usuario FROM usuarios WHERE correo = %s",
+        (correo,)
+    )
     usuario = cursor.fetchone()
 
     if not usuario:
@@ -264,21 +266,27 @@ def recuperarContrasena():
         db.close()
         return jsonify({"error": "Correo no encontrado"}), 404
 
-    # 2️⃣ Generar código y expiración
+    # 2️⃣ Generar código
     codigo = str(random.randint(100000, 999999))
-    expira = datetime.datetime.now() + timedelta(minutes=5)
- 
-    # 3️⃣ Borrar códigos anteriores del mismo correo
-    cursor.execute("DELETE FROM codigos_recuperacion WHERE correo = %s", (correo,))
+    expira = datetime.now() + timedelta(minutes=5)
 
-    # 4️⃣ Insertar el nuevo código
-    sql = """
+    # 3️⃣ Limpiar códigos anteriores
+    cursor.execute(
+        "DELETE FROM codigos_recuperacion WHERE correo = %s",
+        (correo,)
+    )
+
+    # 4️⃣ Guardar código
+    cursor.execute(
+        """
         INSERT INTO codigos_recuperacion (correo, codigo, expiracion)
         VALUES (%s, %s, %s)
-    """
-    cursor.execute(sql, (correo, codigo, expira))
+        """,
+        (correo, codigo, expira)
+    )
     db.commit()
 
+    # 5️⃣ Enviar correo SIN bloquear el endpoint
     try:
         enviar_correo_recuperacion(correo, codigo)
     except Exception as e:
@@ -287,9 +295,9 @@ def recuperarContrasena():
     cursor.close()
     db.close()
 
-    # 6️⃣ Respuesta para Flutter
+    # 6️⃣ Respuesta limpia para Flutter
     return jsonify({
-        "usuario": usuario
+        "mensaje": "Código de recuperación enviado"
     }), 200
     
 @app.route("/codigo", methods=["POST"])
