@@ -15,6 +15,7 @@ from correorecuperacion import enviar_correo_recuperacion
 import random
 from decimal import Decimal
 import traceback
+import threading
 app = Flask(__name__)
 CORS(app)
 
@@ -295,7 +296,14 @@ def recuperarContrasena():
         "usuario": usuario["id_usuario"],
         "mensaje": "Código enviado"
     }), 200
-    
+
+def enviar_correo_async(correo, codigo):
+    try:
+        enviar_correo_recuperacion(correo, codigo)
+    except Exception as e:
+        print("Error enviando correo:", e)
+
+
 @app.route("/codigo", methods=["POST"])
 def ObtenerCodigo():
     data = request.get_json()
